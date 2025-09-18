@@ -234,7 +234,7 @@ impl OAuthClient {
     /// Generates and opens/shows the authorization URL to obtain an access token.
     ///
     /// Returns a verifier that must be included in the final request for validation.
-    fn set_auth_url(&self) -> PkceCodeVerifier {
+    pub fn set_auth_url_impl(&self) -> (PkceCodeVerifier, Url) {
         let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
         // Generate the full authorization URL.
         // Some of these scopes are unavailable for custom client IDs. Which?
@@ -247,11 +247,16 @@ impl OAuthClient {
             .set_pkce_challenge(pkce_challenge)
             .url();
 
+        (pkce_verifier, auth_url)
+    }
+
+    fn set_auth_url(&self) -> PkceCodeVerifier {
+        let (pkce_verifier, auth_url) = self.set_auth_url_impl();
+
         if self.should_open_url {
             open::that_in_background(auth_url.as_str());
         }
         println!("Browse to: {auth_url}");
-
         pkce_verifier
     }
 
