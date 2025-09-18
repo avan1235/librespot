@@ -338,6 +338,15 @@ impl OAuthClient {
         }?;
         trace!("Exchange {code:?} for access token");
 
+        self.get_access_token_async_impl(pkce_verifier, code).await
+    }
+
+    /// Asyncronously obtain a Spotify access token using the authorization code with PKCE OAuth flow.
+    pub async fn get_access_token_async_impl(
+        &self,
+        pkce_verifier: PkceCodeVerifier,
+        code: AuthorizationCode,
+    ) -> Result<OAuthToken, OAuthError> {
         let http_client = reqwest::Client::new();
         let resp = self
             .client
